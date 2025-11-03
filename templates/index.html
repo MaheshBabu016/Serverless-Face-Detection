@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Celebrity Face Detection</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <style>
+    img.detected-img {
+      max-width: 400px;
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    .celeb-img {
+      width: 90px;
+      height: 90px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin: 4px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    }
+  </style>
+</head>
+<body class="bg-light text-center p-5">
+  <h2>Celebrity & Face Detection</h2>
+  <form id="uploadForm" enctype="multipart/form-data" class="mt-4">
+    <input type="file" name="file" accept="image/*" required>
+    <button class="btn btn-primary mt-2" type="submit">Upload</button>
+  </form>
+
+  <div id="result" class="mt-4"></div>
+
+  <script>
+  const form = document.getElementById('uploadForm');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = new FormData(form);
+    document.getElementById('result').innerHTML = "<p>Processing...</p>";
+
+    const res = await fetch('/upload', { method: 'POST', body: data });
+    const json = await res.json();
+
+    if (json.error) {
+      document.getElementById('result').innerHTML = `<p class='text-danger'>${json.error}</p>`;
+      return;
+    }
+
+    let html = `
+      <div class="row justify-content-center">
+        <div class="col-md-5">
+          <h5>Original</h5>
+          <img src="/${json.original}" class="detected-img">
+        </div>
+        <div class="col-md-5">
+          <h5>Detected</h5>
+          <img src="/${json.detected}" class="detected-img">
+        </div>
+      </div>
+    `;
+
+    if (Object.keys(json.celebrities).length > 0) {
+      html += `<h4 class="mt-4">Detected Celebrities</h4>`;
+      for (const [name, imgs] of Object.entries(json.celebrities)) {
+        html += `<h5 class="mt-3">${name}</h5><div class="d-flex justify-content-center flex-wrap">`;
+        imgs.forEach(i => html += `<img src="${i}" class="celeb-img">`);
+        html += `</div>`;
+      }
+    }
+
+    if (json.non_celebrity_faces > 0) {
+      html += `<p class="mt-3 text-muted">${json.non_celebrity_faces} non-celebrity face(s) detected.</p>`;
+    }
+
+    document.getElementById('result').innerHTML = html;
+  });
+  </script>
+</body>
+</html>
