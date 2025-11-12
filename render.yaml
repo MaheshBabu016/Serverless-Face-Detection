@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: serverless-face-detection
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn application:application"
+    envVars:
+      - key: AWS_REGION
+        value: ap-south-1
+      - key: S3_BUCKET
+        value: face-detect-uploads
+      - key: SERPAPI_KEY
+        value: 6e0362f946aa5a0198ae7f42ce09951c8fcb60274e628a60d8664e30dc5b6b99
+      # Optional — replace with your real AWS credentials if you need S3 uploads
+      - key: AWS_ACCESS_KEY_ID
+        value: YOUR_AWS_ACCESS_KEY
+      - key: AWS_SECRET_ACCESS_KEY
+        value: YOUR_AWS_SECRET_KEY
